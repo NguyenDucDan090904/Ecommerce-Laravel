@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -12,7 +13,14 @@ class ProductController extends Controller
      */
     public function index()
     {
-        //
+        $products = Product::with('category')
+            ->where('is_active', true)
+            ->latest()
+            ->paginate(12);
+
+        $categories = Category::whereNull('parent_id')->with('children')->get();
+
+        return view('dashboard', compact('products', 'categories'));
     }
 
     /**
@@ -36,7 +44,11 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        //
+        $product = Product::with(['category', 'images'])
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        return view('products.show', compact('product'));
     }
 
     /**
