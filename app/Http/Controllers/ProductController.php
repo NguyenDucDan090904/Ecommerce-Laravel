@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -13,14 +15,8 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::with('category')
-            ->where('is_active', true)
-            ->latest()
-            ->paginate(12);
-
-        $categories = Category::whereNull('parent_id')->with('children')->get();
-
-        return view('dashboard', compact('products', 'categories'));
+        $products = Product::with('category')->latest()->paginate(10);
+        return view('admin.products.index', compact('products'));
     }
 
     /**
@@ -28,7 +24,8 @@ class ProductController extends Controller
      */
     public function create()
     {
-        //
+        $categories = Category::all();
+        return view('admin.products.create', compact('categories'));
     }
 
     /**
@@ -36,7 +33,24 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->validated();
+        $data['slug'] = Str::slug($request->name) . '-' . time();
+
+        // Lưu sản phẩm
+        $product = Product::create($data);
+
+        // Xử lý upload nhiều ảnh
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('products', 'public');
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'path'       => $path
+                ]);
+            }
+        }
+
+        return redirect()->route('admin.products.index')->with('success', 'Thêm sản phẩm thành công!');
     }
 
     /**
