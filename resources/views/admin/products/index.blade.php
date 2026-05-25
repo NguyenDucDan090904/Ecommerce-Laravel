@@ -1,36 +1,127 @@
 @extends('admin.layouts.app')
 
 @section('content')
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">Danh sách sản phẩm</h2>
-        <a href="{{ route('admin.products.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded">Thêm mới</a>
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-800 tracking-tight">Quản lý kho sản phẩm</h2>
+            <p class="text-base text-gray-500 mt-1.5">Danh sách các thiết bị điện tử hiện có trên hệ thống cửa hàng.</p>
+        </div>
+        <a href="{{ route('admin.products.create') }}" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-semibold text-base transition-all shadow-sm shadow-blue-200">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Thêm sản phẩm mới
+        </a>
     </div>
 
-    <div class="bg-white shadow-md rounded my-6 overflow-x-auto">
-        <table class="min-w-max w-full table-auto">
-            <thead>
-            <tr class="bg-gray-200 text-gray-600 uppercase text-sm">
-                <th class="py-3 px-6 text-left">Tên sản phẩm</th>
-                <th class="py-3 px-6 text-left">Danh mục</th>
-                <th class="py-3 px-6 text-center">Giá</th>
-                <th class="py-3 px-6 text-center">Kho</th>
-                <th class="py-3 px-6 text-center">Hành động</th>
-            </tr>
-            </thead>
-            <tbody class="text-gray-600 text-sm">
-            @foreach($products as $product)
-                <tr class="border-b border-gray-200 hover:bg-gray-100">
-                    <td class="py-3 px-6 text-left">{{ $product->name }}</td>
-                    <td class="py-3 px-6 text-left">{{ $product->category->name }}</td>
-                    <td class="py-3 px-6 text-center">{{ number_format($product->price) }}đ</td>
-                    <td class="py-3 px-6 text-center">{{ $product->stock }}</td>
-                    <td class="py-3 px-6 text-center">
-                        <a href="{{ route('admin.products.edit', $product->id) }}" class="text-blue-500">Sửa</a>
-                    </td>
+    <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                <tr class="bg-gray-50 border-b border-gray-100 text-gray-600 uppercase text-sm font-bold tracking-wider">
+                    <th class="py-4.5 px-6 w-28">Hình ảnh</th>
+                    <th class="py-4.5 px-6 text-base">Thông tin sản phẩm</th>
+                    <th class="py-4.5 px-6 text-base">Danh mục</th>
+                    <th class="py-4.5 px-6 text-center text-base">Dung lượng Pin</th>
+                    <th class="py-4.5 px-6 text-right text-base">Giá bán</th>
+                    <th class="py-4.5 px-6 text-center text-base">Tồn kho</th>
+                    <th class="py-4.5 px-6 text-center w-40 text-base">Hành động</th>
                 </tr>
-            @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-gray-700 text-base">
+                @forelse($products as $product)
+                    <tr class="hover:bg-gray-50/60 transition-colors group">
+                        <td class="py-4.5 px-6 vertical-align-middle">
+                            @if($product->images->isNotEmpty())
+                                <div class="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 shadow-sm">
+                                    <img src="{{ asset('storage/' . $product->images->first()->path) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                                </div>
+                            @else
+                                <div class="w-16 h-16 rounded-lg border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-gray-400 italic text-xs">
+                                    No Image
+                                </div>
+                            @endif
+                        </td>
+
+                        <td class="py-4.5 px-6">
+                            <div class="font-bold text-gray-900 text-lg group-hover:text-blue-600 transition-colors">{{ $product->name }}</div>
+                        </td>
+
+                        <td class="py-4.5 px-6">
+                            <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-gray-100 text-gray-700 border border-gray-200/60">
+                                {{ $product->category->name }}
+                            </span>
+                        </td>
+
+                        <td class="py-4.5 px-6 text-center">
+                            @if(isset($product->attributes['battery']) && $product->attributes['battery'] !== '')
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+                                    ⚡ {{ $product->attributes['battery'] }}
+                                </span>
+                            @else
+                                <span class="text-gray-400">—</span>
+                            @endif
+                        </td>
+
+                        <td class="py-4.5 px-6 text-right font-bold text-gray-900 text-lg">
+                            {{ number_format($product->price, 0, ',', '.') }} <span class="text-sm font-normal text-gray-500">đ</span>
+                        </td>
+
+                        <td class="py-4.5 px-6 text-center">
+                            @if($product->stock == 0)
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-red-100 text-red-800">
+                                    Hết hàng
+                                </span>
+                            @elseif($product->stock <= 5)
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-yellow-100 text-yellow-800" title="Cần nhập thêm hàng">
+                                    Chỉ còn {{ $product->stock }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
+                                    {{ $product->stock }} SP
+                                </span>
+                            @endif
+                        </td>
+
+                        <td class="py-4.5 px-6 text-center">
+                            <div class="flex items-center justify-center space-x-3">
+                                <a href="{{ route('admin.products.edit', $product->id) }}" class="inline-flex items-center p-2 bg-gray-50 hover:bg-blue-50 text-gray-500 hover:text-blue-600 rounded-lg transition-colors border border-gray-200" title="Chỉnh sửa">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </a>
+
+                                <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" class="inline" onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này? Thao tác này không thể hoàn tác!')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center p-2 bg-gray-50 hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-lg transition-colors border border-gray-200" title="Xóa">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" class="py-16 text-center text-gray-400 bg-gray-50/30">
+                            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                            <span class="text-lg font-semibold block text-gray-500">Kho hàng trống</span>
+                            <p class="text-sm text-gray-400 mt-1.5">Hãy bắt đầu thêm sản phẩm điện tử đầu tiên của bạn.</p>
+                        </td>
+                    </tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @if($products->hasPages())
+            <div class="bg-gray-50 border-t border-gray-100 px-6 py-4 text-base">
+                {{ $products->links() }}
+            </div>
+        @endif
     </div>
-    {{ $products->links() }}
 @endsection
