@@ -1,7 +1,11 @@
 <?php
 
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Frontend\CartController;
+use App\Http\Controllers\Frontend\CheckoutController;
+use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -10,37 +14,46 @@ use Illuminate\Support\Facades\Route;
 | Public Routes
 |--------------------------------------------------------------------------
 */
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Xem danh sách và chi tiết sản phẩm (Khách vãng lai cũng có thể xem)
+// Sản phẩm
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show'); // Sử dụng {product} để Laravel tự model binding
 
+// Giỏ hàng
+Route::prefix('cart')->name('cart.')->group(function () {
+    Route::get('/', [CartController::class, 'index'])->name('index');
+    Route::post('/add/{product}', [CartController::class, 'add'])->name('add');
+    Route::post('/update/{id}', [CartController::class, 'update'])->name('update');
+    Route::post('/remove/{id}', [CartController::class, 'remove'])->name('remove');
+});
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated User Routes (Customer)
+| Authenticated User Routes (Khách hàng)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->group(function () {
-
-    // Dashboard của khách hàng
+    // Dashboard người dùng
     Route::get('/dashboard', [ProductController::class, 'index'])->name('dashboard');
-
-    // Quản lý hồ sơ cá nhân
+    // Profile
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('update');
         Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
     });
-});
 
+    // Checkout (Chỉ user đăng nhập mới được thanh toán)
+    Route::prefix('checkout')->name('checkout.')->group(function () {
+        Route::get('/', [CheckoutController::class, 'index'])->name('index');
+        Route::post('/', [CheckoutController::class, 'process'])->name('process');
+        Route::get('/success/{order}', [CheckoutController::class, 'success'])->name('success');
+    });
+});
 
 /*
 |--------------------------------------------------------------------------
-| Admin Routes
+| Admin Routes (Yêu cầu đăng nhập & quyền admin)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'admin'])
@@ -48,19 +61,17 @@ Route::middleware(['auth', 'admin'])
     ->name('admin.')
     ->group(function () {
 
-        // Trang chủ quản trị
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', function () { return view('admin.dashboard'); })->name('dashboard');
 
-        // Quản lý sản phẩm & danh mục (Resourceful)
-        // Lưu ý: Route name sẽ là admin.products.index, admin.categories.store...
+        // Products (Có thêm route xóa ảnh phụ)
         Route::resource('products', ProductController::class);
-        Route::resource('categories', CategoryController::class);
-        Route::delete('/product-images/{image}', [ProductController::class, 'deleteImage'])->name('products.delete-image');
+        Route::delete('/products/images/{image}', [ProductController::class, 'deleteImage'])->name('products.delete-image');
 
-        // Bạn có thể thêm quản lý đơn hàng sau này tại đây
-        // Route::resource('orders', OrderController::class)->only(['index', 'show', 'update']);
+        // Categories
+        Route::resource('categories', CategoryController::class);
+
+        // Orders
+        Route::resource('orders', OrderController::class)->only(['index', 'show', 'update']);
     });
 
 require __DIR__.'/auth.php';
