@@ -19,13 +19,19 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                 <tr class="bg-gray-50 border-b border-gray-100 text-gray-600 uppercase text-sm font-bold tracking-wider">
-                    <th class="py-4.5 px-6 w-28">Hình ảnh</th>
-                    <th class="py-4.5 px-6 text-base">Thông tin sản phẩm</th>
-                    <th class="py-4.5 px-6 text-base">Danh mục</th>
-                    <th class="py-4.5 px-6 text-center text-base">Dung lượng Pin</th>
-                    <th class="py-4.5 px-6 text-right text-base">Giá bán</th>
-                    <th class="py-4.5 px-6 text-center text-base">Tồn kho</th>
-                    <th class="py-4.5 px-6 text-center w-40 text-base">Hành động</th>
+                    <th class="py-4.5 px-6 w-28 whitespace-nowrap">Hình ảnh</th>
+
+                    <th class="py-4.5 px-6 text-base w-[35%]">Thông tin sản phẩm</th>
+
+                    <th class="py-4.5 px-6 text-base whitespace-nowrap w-32">Danh mục</th>
+
+                    <th class="py-4.5 px-6 text-center text-base whitespace-nowrap w-36">Dung lượng Pin</th>
+
+                    <th class="py-4.5 px-6 text-right text-base w-[20%]">Giá bán</th>
+
+                    <th class="py-4.5 px-6 text-center text-base whitespace-nowrap w-32">Tồn kho</th>
+
+                    <th class="py-4.5 px-6 text-center w-40 whitespace-nowrap">Hành động</th>
                 </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 text-gray-700 text-base">
