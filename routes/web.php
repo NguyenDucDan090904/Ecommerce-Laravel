@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Frontend\CartController;
@@ -61,17 +62,19 @@ Route::middleware(['auth', 'admin'])
     ->name('admin.')
     ->group(function () {
 
-        Route::get('/dashboard', function () { return view('admin.dashboard'); })->name('dashboard');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         // Products (Có thêm route xóa ảnh phụ)
         Route::resource('products', ProductController::class);
         Route::delete('/products/images/{image}', [ProductController::class, 'deleteImage'])->name('products.delete-image');
+        Route::post('/products/import', [ProductController::class, 'import'])->name('products.import');
 
         // Categories
         Route::resource('categories', CategoryController::class);
 
         // Orders
         Route::resource('orders', OrderController::class)->only(['index', 'show', 'update']);
+        Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     });
 
 require __DIR__.'/auth.php';
