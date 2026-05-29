@@ -1,64 +1,91 @@
 @extends('admin.layouts.app')
 
 @section('content')
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-        <p class="text-gray-600">Chào mừng bạn quay trở lại hệ thống quản trị.</p>
-    </div>
+    <div class="p-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+            <h1 class="text-2xl font-bold text-gray-800">Tổng quan kinh doanh</h1>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100 text-blue-500">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="box"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <p class="mb-2 text-sm font-medium text-gray-600">Tổng sản phẩm</p>
-                    <p class="text-2xl font-semibold text-gray-700">{{ \App\Models\Product::count() }}</p>
-                </div>
+            <form method="GET" action="{{ route('admin.dashboard') }}" id="filterForm">
+                <select name="filter" onchange="document.getElementById('filterForm').submit()"
+                        class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="today" {{ $current_filter == 'today' ? 'selected' : '' }}>Hôm nay</option>
+                    <option value="yesterday" {{ $current_filter == 'yesterday' ? 'selected' : '' }}>Hôm qua</option>
+                    <option value="7_days" {{ $current_filter == '7_days' ? 'selected' : '' }}>7 ngày qua</option>
+                    <option value="30_days" {{ $current_filter == '30_days' ? 'selected' : '' }}>30 ngày qua</option>
+                    <option value="this_month" {{ $current_filter == 'this_month' ? 'selected' : '' }}>Tháng này</option>
+                    <option value="all" {{ $current_filter == 'all' ? 'selected' : '' }}>Tất cả thời gian</option>
+                </select>
+            </form>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="text-sm font-medium text-gray-500 uppercase">Tổng doanh thu</div>
+                <div class="text-3xl font-black text-blue-600 mt-2">{{ number_format($total_revenue, 0, ',', '.') }} đ</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="text-sm font-medium text-gray-500 uppercase">Tổng đơn hàng</div>
+                <div class="text-3xl font-black text-gray-800 mt-2">{{ $total_orders }}</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="text-sm font-medium text-gray-500 uppercase">Khách hàng</div>
+                <div class="text-3xl font-black text-gray-800 mt-2">{{ $total_users }}</div>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100 text-green-500">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="folder"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <p class="mb-2 text-sm font-medium text-gray-600">Danh mục</p>
-                    <p class="text-2xl font-semibold text-gray-700">{{ \App\Models\Category::count() }}</p>
-                </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">Doanh thu 6 tháng gần nhất</h2>
+                <canvas id="revenueChart" height="200"></canvas>
             </div>
-        </div>
 
-        <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-yellow-500">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-yellow-100 text-yellow-500">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="shopping-cart"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <p class="mb-2 text-sm font-medium text-gray-600">Đơn hàng mới</p>
-                    <p class="text-2xl font-semibold text-gray-700">{{ \App\Models\Order::where('status', 'pending')->count() }}</p>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">Sản phẩm bán chạy</h2>
+                <div class="space-y-4">
+                    @foreach($top_products as $item)
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden">
+                                    @if($item->product->images->first())
+                                        <img src="{{ asset('storage/' . $item->product->images->first()->path) }}" class="w-full h-full object-cover">
+                                    @endif
+                                </div>
+                                <span class="text-sm font-medium text-gray-700">{{ $item->product->name }}</span>
+                            </div>
+                            <span class="text-sm font-bold text-blue-600">{{ $item->total_qty }} lượt bán</span>
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="mt-8 bg-white p-6 rounded-lg shadow-sm">
-        <h3 class="text-lg font-bold mb-4">Thao tác nhanh</h3>
-        <div class="flex space-x-4">
-            <a href="{{ route('admin.products.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
-                + Thêm sản phẩm
-            </a>
-            <a href="{{ route('admin.products.index') }}" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded transition">
-                Quản lý kho hàng
-            </a>
-        </div>
-    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {!! json_encode($chart_labels) !!},
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: {!! json_encode($chart_data) !!},
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    </script>
 @endsection
