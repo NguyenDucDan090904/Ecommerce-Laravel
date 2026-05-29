@@ -83,6 +83,8 @@
                     <th class="py-4.5 px-6 text-center text-base whitespace-nowrap w-32">Tồn kho</th>
 
                     <th class="py-4.5 px-6 text-center w-40 whitespace-nowrap">Hành động</th>
+
+                    <th class="py-4.5 px-6 text-center w-40 whitespace-nowrap">Trạng thái</th>
                 </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 text-gray-700 text-base">
@@ -101,7 +103,7 @@
                         </td>
 
                         <td class="py-4.5 px-6">
-                            <div class="font-bold text-gray-900 text-lg group-hover:text-blue-600 transition-colors">{{ $product->name }}</div>
+                                <div class="font-bold text-gray-900 text-lg group-hover:text-blue-600 transition-colors">{{ $product->name }}</div>
                         </td>
 
                         <td class="py-4.5 px-6">
@@ -159,6 +161,20 @@
                                 </form>
                             </div>
                         </td>
+
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button type="button"
+                                    onclick="toggleStatus(this)"
+                                    data-url="{{ route('admin.products.toggle-status', $product->id) }}"
+                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ $product->is_active ? 'bg-emerald-500' : 'bg-gray-300' }}"
+                                    role="switch"
+                                    aria-checked="{{ $product->is_active ? 'true' : 'false' }}">
+
+                                <span aria-hidden="true"
+                                      class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $product->is_active ? 'translate-x-5' : 'translate-x-0' }}">
+                                </span>
+                            </button>
+                        </td>
                     </tr>
                 @empty
                     <tr>
@@ -181,4 +197,55 @@
             </div>
         @endif
     </div>
+
+    <script>
+        function toggleStatus(buttonElement) {
+            buttonElement.disabled = true;
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            // Lấy URL chuẩn xác từ thuộc tính data-url của nút
+            const targetUrl = buttonElement.getAttribute('data-url');
+
+            fetch(targetUrl, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        const innerCircle = buttonElement.querySelector('span');
+
+                        if (data.is_active) {
+                            buttonElement.classList.remove('bg-gray-300');
+                            buttonElement.classList.add('bg-emerald-500');
+                            innerCircle.classList.remove('translate-x-0');
+                            innerCircle.classList.add('translate-x-5');
+                            buttonElement.setAttribute('aria-checked', 'true');
+                        } else {
+                            buttonElement.classList.remove('bg-emerald-500');
+                            buttonElement.classList.add('bg-gray-300');
+                            innerCircle.classList.remove('translate-x-5');
+                            innerCircle.classList.add('translate-x-0');
+                            buttonElement.setAttribute('aria-checked', 'false');
+                        }
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Lỗi Route hoặc Server! Vui lòng kiểm tra F12 -> Network.');
+                })
+                .finally(() => {
+                    buttonElement.disabled = false;
+                });
+        }
+    </script>
 @endsection

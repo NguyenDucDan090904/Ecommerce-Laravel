@@ -88,4 +88,22 @@ class ProductController extends Controller
             return redirect()->back()->with('error', 'Có lỗi xảy ra trong quá trình import: ' . $e->getMessage());
         }
     }
+
+    public function toggleStatus($id)
+    {
+        try {
+            $product = $this->productService->toggleStatus($id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật trạng thái thành công!',
+                'is_active' => $product->is_active
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
