@@ -3,19 +3,38 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
+use App\Services\ProductService;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    /**
-     * Hiển thị trang chủ mua sắm cho Khách và User thường
-     */
+    protected $productService;
+
+    public function __construct(ProductService $productService) {
+        $this->productService = $productService;
+    }
     public function index()
     {
-        // Lấy toàn bộ sản phẩm kèm theo quan hệ ảnh (nếu có) để tối ưu câu lệnh SQL (Eager Loading)
-        $products = Product::with('images')->latest()->get();
+        $products = $this->productService->getActiveProducts();
 
         return view('welcome', compact('products'));
+    }
+
+    public function show($id)
+    {
+        try {
+            // Lấy thông tin sản phẩm từ Repository qua Service
+            // (Đảm bảo ProductRepository của bạn đã eager load 'images' và 'category' trong hàm findById)
+            $product = $this->productService->getProductById($id);
+
+            // Nếu sản phẩm đang ở trạng thái ẩn (is_active = 0), không cho khách xem
+            if (!$product || !$product->is_active) {
+                abort(404);
+            }
+
+            return view('frontend.products.show', compact('product'));
+        } catch (\Exception $e) {
+            abort(404);
+        }
     }
 }

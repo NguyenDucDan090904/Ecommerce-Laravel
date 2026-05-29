@@ -65,18 +65,21 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             @foreach($products as $product)
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col justify-between group hover:shadow-xl transition-all duration-300">
-                    <div class="relative bg-gray-50 pt-[100%] overflow-hidden">
+
+                    <a href="{{ route('frontend.products.show', $product->id) }}" class="relative bg-gray-50 pt-[100%] overflow-hidden block">
                         @if($product->images && $product->images->first())
                             <img src="{{ asset('storage/' . $product->images->first()->path) }}" alt="{{ $product->name }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                         @else
                             <div class="absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-100 text-sm font-semibold">No Image</div>
                         @endif
-                    </div>
+                    </a>
 
                     <div class="p-5 flex-1 flex flex-col justify-between">
                         <div class="mb-4">
                             <h4 class="text-base font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                                {{ $product->name }}
+                                <a href="{{ route('frontend.products.show', $product->id) }}">
+                                    {{ $product->name }}
+                                </a>
                             </h4>
                             <p class="text-xl font-black text-blue-600 mt-2">
                                 {{ number_format($product->price, 0, ',', '.') }} đ
