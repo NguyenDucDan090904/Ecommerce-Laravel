@@ -160,4 +160,18 @@ class ProductService
         return $this->productRepo->getProductsForAdmin($filters);
     }
 
+    public function toggleStatus($id)
+    {
+        // Ở đây bạn có thể thêm các logic kiểm tra quyền (nếu cần) trước khi gọi Repo
+        return $this->productRepo->toggleStatus($id);
+    }
+
+    public function getActiveProducts($perPage = 12)
+    {
+        return $this->productRepo->getActiveProducts($perPage);
+    }
+
+    public function getProductById(int $id) {
+        return $this->productRepo->findById($id);
+    }
 }

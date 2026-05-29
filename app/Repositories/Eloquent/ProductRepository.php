@@ -65,4 +65,23 @@ class ProductRepository implements ProductRepositoryInterface
         // Trả về kết quả phân trang, nhớ dùng withQueryString() để chuyển trang không bị rớt bộ lọc
         return $query->latest('id')->paginate(10)->withQueryString();
     }
+
+    public function toggleStatus($id)
+    {
+        $product = Product::findOrFail($id);
+
+        // Đảo ngược trạng thái hiện tại (Đang 1 thành 0, đang 0 thành 1)
+        $product->is_active = !$product->is_active;
+        $product->save();
+
+        return $product;
+    }
+
+    public function getActiveProducts($perPage = 12)
+    {
+        return Product::with(['images', 'category'])
+            ->where('is_active', 1)
+            ->latest('id')
+            ->paginate($perPage);
+    }
 }
