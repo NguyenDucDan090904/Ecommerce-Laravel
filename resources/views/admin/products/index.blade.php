@@ -1,18 +1,69 @@
 @extends('admin.layouts.app')
 
 @section('content')
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
         <div>
             <h2 class="text-3xl font-bold text-gray-800 tracking-tight">Quản lý kho sản phẩm</h2>
             <p class="text-base text-gray-500 mt-1.5">Danh sách các thiết bị điện tử hiện có trên hệ thống cửa hàng.</p>
         </div>
-        <a href="{{ route('admin.products.create') }}" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-semibold text-base transition-all shadow-sm shadow-blue-200">
+        <a href="{{ route('admin.products.create') }}" class="shrink-0 inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-semibold text-base transition-all shadow-sm shadow-blue-200">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
             Thêm sản phẩm mới
         </a>
     </div>
+
+    <div class="mb-8 bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <div class="text-sm text-gray-600">
+            <span class="font-bold">Mẫu file CSV chuẩn:</span> Tên sản phẩm, ID Danh mục, Giá, Tồn kho, Pin, CPU, RAM, Màn hình, Mô tả.
+        </div>
+        <form action="{{ route('admin.products.import') }}" method="POST" enctype="multipart/form-data" class="flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
+            @csrf
+            <input type="file" name="file" accept=".csv" required
+                   class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition-all">
+            <button type="submit" class="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-4 py-2 rounded-lg transition-colors shadow-sm shadow-emerald-100">
+                Nhập Excel/CSV
+            </button>
+        </form>
+    </div>
+
+    <form action="{{ route('admin.products.index') }}" method="GET" class="mb-6 bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-4 items-end">
+
+        <div class="flex-1 w-full">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input type="text" name="keyword" value="{{ request('keyword') }}" placeholder="Nhập tên sản phẩm..."
+                       class="pl-10 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm h-10 border px-3">
+            </div>
+        </div>
+
+        <div class="w-full md:w-64">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
+            <select name="category_id" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm h-10 border px-3">
+                <option value="">Tất cả danh mục</option>
+                @foreach($categories as $category)
+                    <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                        {{ $category->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="flex gap-2 w-full md:w-auto">
+            <button type="submit" class="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors h-10">
+                Lọc dữ liệu
+            </button>
+            <a href="{{ route('admin.products.index') }}" class="flex-1 md:flex-none bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors h-10 text-center flex items-center justify-center">
+                Xóa lọc
+            </a>
+        </div>
+    </form>
 
     <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">

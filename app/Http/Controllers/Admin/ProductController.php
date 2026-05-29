@@ -3,32 +3,40 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ImportProductRequest;
 use App\Http\Requests\Admin\StoreProductRequest;
 use App\Http\Requests\Admin\UpdateProductRequest;
+use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Services\ProductService;
 use App\Repositories\Contracts\ProductRepositoryInterface;
-use App\Models\Category;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
     protected $productService;
     protected $productRepo;
 
-    public function __construct(ProductService $productService, ProductRepositoryInterface $productRepo)
+    protected $categoryRepo;
+
+    public function __construct(ProductService $productService, ProductRepositoryInterface $productRepo, CategoryRepositoryInterface $categoryRepo)
     {
         $this->productService = $productService;
         $this->productRepo = $productRepo;
+        $this->categoryRepo = $categoryRepo;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $products = $this->productRepo->getAllPaginated(10);
-        return view('admin.products.index', compact('products'));
+        $categories = $this->categoryRepo->getAll();
+
+        // Lấy danh sách sản phẩm (có truyền kèm data từ request để lọc)
+        $products = $this->productService->getProductsForAdmin($request->all());
+        return view('admin.products.index', compact('products', 'categories'));
     }
 
     public function create()
     {
-        $categories = Category::all();
+        $categories = $this->categoryRepo->getAll();
         return view('admin.products.create', compact('categories'));
     }
 
@@ -41,14 +49,21 @@ class ProductController extends Controller
     public function edit($id)
     {
         $product = $this->productRepo->findById($id);
-        $categories = Category::all();
+        $categories = $this->categoryRepo->getAll();
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
     public function update(UpdateProductRequest $request, $id)
     {
-        $this->productService->updateProduct($id, $request->validated(), $request->file('images'));
-        return redirect()->route('admin.products.index')->with('success', 'Cập nhật sản phẩm thành công!');
+        try {
+            // Chuyển toàn bộ dữ liệu (bao gồm Data chữ và Mảng file ảnh) sang Service xử lý
+            $this->productService->updateProduct($id, $request->validated(), $request->file('images'));
+
+            return redirect()->route('admin.products.index')
+                ->with('success', 'Cập nhật thông tin và hình ảnh sản phẩm thành công!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Cập nhật thất bại: ' . $e->getMessage());
+        }
     }
 
     public function destroy($id)
@@ -61,5 +76,16 @@ class ProductController extends Controller
     {
         $this->productService->deleteSingleImage($imageId);
         return back()->with('success', 'Đã xóa ảnh thành công.');
+    }
+
+    public function import(ImportProductRequest $request)
+    {
+        try {
+            $count = $this->productService->importFromCsv($request->file('file'));
+            return redirect()->route('admin.products.index')
+                ->with('success', "Đã nhập thành công {$count} sản phẩm vào kho hàng!");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Có lỗi xảy ra trong quá trình import: ' . $e->getMessage());
+        }
     }
 }

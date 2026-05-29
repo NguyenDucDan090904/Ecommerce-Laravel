@@ -48,19 +48,19 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label class="block text-sm font-bold text-gray-600 uppercase mb-1.5">Bộ vi xử lý (CPU)</label>
-                            <input type="text" name="attributes[cpu]" value="{{ old('attributes.cpu', $product->attributes['cpu'] ?? '') }}" class="w-full border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 p-3 rounded-lg text-base transition-all outline-none">
+                            <input type="text" name="cpu" value="{{ old('attributes.cpu', $product->attributes['cpu'] ?? '') }}" class="w-full border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 p-3 rounded-lg text-base transition-all outline-none">
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-600 uppercase mb-1.5">Bộ nhớ trong (RAM)</label>
-                            <input type="text" name="attributes[ram]" value="{{ old('attributes.ram', $product->attributes['ram'] ?? '') }}" class="w-full border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 p-3 rounded-lg text-base transition-all outline-none">
+                            <input type="text" name="ram" value="{{ old('attributes.ram', $product->attributes['ram'] ?? '') }}" class="w-full border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 p-3 rounded-lg text-base transition-all outline-none">
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-600 uppercase mb-1.5">Màn hình</label>
-                            <input type="text" name="attributes[screen]" value="{{ old('attributes.screen', $product->attributes['screen'] ?? '') }}" class="w-full border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 p-3 rounded-lg text-base transition-all outline-none">
+                            <input type="text" name="screen" value="{{ old('attributes.screen', $product->attributes['screen'] ?? '') }}" class="w-full border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 p-3 rounded-lg text-base transition-all outline-none">
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-600 uppercase mb-1.5">Dung lượng Pin</label>
-                            <input type="text" name="attributes[battery]" value="{{ old('attributes.battery', $product->attributes['battery'] ?? '') }}" class="w-full border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 p-3 rounded-lg text-base transition-all outline-none">
+                            <input type="text" name="battery" value="{{ old('attributes.battery', $product->attributes['battery'] ?? '') }}" class="w-full border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 p-3 rounded-lg text-base transition-all outline-none">
                         </div>
                     </div>
                 </div>
